@@ -26,6 +26,32 @@ async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
+
+        const carsCollection = client.db('toySportsCar').collection('categories');
+
+        app.post('/viewdetails', async (req, res) => {
+            const body = req.body;
+
+            if (!body) {
+                return res.status(404).send({ message: 'You have to log in first to view details' })
+            }
+
+            const result = await carsCollection.insertOne(body);
+            console.log(result);
+            res.send(result);
+        })
+
+        app.get('/allToys/:text', async (req, res) => {
+            console.log(req.params.text);
+            if (req.params.text == 'racing' || req.params.text == 'stunt' || req.params.text == 'OffRoad') {
+                const result = await carsCollection.find({ status: req.params.text }).toArray();
+                console.log(result);
+                return res.send(result);
+            }
+            const result = await carsCollection.find({}).toArray();
+            res.send(result);
+        })
+
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
