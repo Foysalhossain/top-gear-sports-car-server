@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express();
 const port = process.env.PORT || 5000;
@@ -29,7 +29,7 @@ async function run() {
 
         const carsCollection = client.db('toySportsCar').collection('categories');
 
-        app.post('/viewdetails', async (req, res) => {
+        app.post('/viewDetails', async (req, res) => {
             const body = req.body;
 
             if (!body) {
@@ -37,7 +37,7 @@ async function run() {
             }
 
             const result = await carsCollection.insertOne(body);
-            console.log(result);
+            // console.log(result);
             res.send(result);
         })
 
@@ -49,6 +49,19 @@ async function run() {
                 return res.send(result);
             }
             const result = await carsCollection.find({}).toArray();
+            res.send(result);
+        })
+
+        app.get('/details/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+
+            const options = {
+                projection: { picture: 1, name: 1, seller_name: 1, seller_email: 1, price: 1, quantity: 1, description: 1, rating: 1 }
+            }
+
+            const result = await carsCollection.findOne(query, options);
+            console.log(result);
             res.send(result);
         })
 
