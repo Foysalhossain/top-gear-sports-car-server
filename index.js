@@ -25,16 +25,16 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
 
         const carsCollection = client.db('toySportsCar').collection('categories');
         const addCollection = client.db('toySportsCar').collection('AddCategories');
 
         // create index on two field
-        const indexKeys = { title: 1, category: 1 };
-        const indexOptions = { name: 'titleCategory' };
+        // const indexKeys = { title: 1, category: 1 };
+        // const indexOptions = { name: 'titleCategory' };
 
-        const result = await addCollection.createIndex(indexKeys, indexOptions);
+        // const result = await addCollection.createIndex(indexKeys, indexOptions);
 
 
         app.get('/toySearchByTitle/:text', async (req, res) => {
@@ -45,8 +45,6 @@ async function run() {
             // console.log(search);
             res.send(search);
         })
-
-
 
 
         app.post('/viewDetails', async (req, res) => {
@@ -97,6 +95,37 @@ async function run() {
             res.send(result);
         })
 
+        app.get('/addCategory/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            // const category = req.query;
+            const result = await addCollection.findOne(query);
+            res.send(result);
+        })
+
+        app.put('/addCategory/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log(id);
+            const filter = { _id: new ObjectId(id) }
+            const data = req.body;
+            console.log(data);
+            const updateDoc = {
+                $set: {
+                    picture: data.picture,
+                    name: data.name,
+                    sellerName: data.sellerName,
+                    sellerEmail: data.email,
+                    category: data.category,
+                    price: data.price,
+                    rating: data.rating,
+                    quantity: data.quantity,
+                    description: data.description
+                },
+            };
+            const result = await addCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+
 
         app.get('/myToys', async (req, res) => {
             console.log(req.query.email);
@@ -125,7 +154,7 @@ async function run() {
 
 
         // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
+        // await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
