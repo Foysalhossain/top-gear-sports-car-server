@@ -30,6 +30,25 @@ async function run() {
         const carsCollection = client.db('toySportsCar').collection('categories');
         const addCollection = client.db('toySportsCar').collection('AddCategories');
 
+        // create index on two field
+        const indexKeys = { title: 1, category: 1 };
+        const indexOptions = { name: 'titleCategory' };
+
+        const result = await addCollection.createIndex(indexKeys, indexOptions);
+
+
+        app.get('/toySearchByTitle/:text', async (req, res) => {
+            const searchText = req.params.text;
+            // console.log(searchText);
+            const result = await addCollection.find().toArray();
+            const search = result.filter(item => item.name.toLowerCase().includes(searchText));
+            // console.log(search);
+            res.send(search);
+        })
+
+
+
+
         app.post('/viewDetails', async (req, res) => {
             const body = req.body;
 
@@ -68,7 +87,6 @@ async function run() {
 
         app.post('/addCategory', async (req, res) => {
             const data = req.body;
-            console.log(data);
             const result = await addCollection.insertOne(data);
             res.send(result);
         })
@@ -91,6 +109,12 @@ async function run() {
             res.send(result)
         })
 
+        // search
+        app.get('/myToys/:email', async (req, res) => {
+            console.log(req.params.email);
+            const result = await addCollection.find({ sellerEmail: req.params.email }).toArray();
+            res.send(result);
+        })
 
         app.delete('/myToys/:id', async (req, res) => {
             const id = req.params.id;
@@ -98,6 +122,7 @@ async function run() {
             const result = await addCollection.deleteOne(query);
             res.send(result)
         })
+
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
