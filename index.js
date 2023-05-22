@@ -28,6 +28,7 @@ async function run() {
         await client.connect();
 
         const carsCollection = client.db('toySportsCar').collection('categories');
+        const addCollection = client.db('toySportsCar').collection('AddCategories');
 
         app.post('/viewDetails', async (req, res) => {
             const body = req.body;
@@ -41,11 +42,11 @@ async function run() {
             res.send(result);
         })
 
-        app.get('/allToys/:text', async (req, res) => {
+        app.get('/tabToys/:text', async (req, res) => {
             console.log(req.params.text);
             if (req.params.text == 'racing' || req.params.text == 'stunt' || req.params.text == 'OffRoad') {
                 const result = await carsCollection.find({ status: req.params.text }).toArray();
-                console.log(result);
+                // console.log(result);
                 return res.send(result);
             }
             const result = await carsCollection.find({}).toArray();
@@ -61,8 +62,41 @@ async function run() {
             }
 
             const result = await carsCollection.findOne(query, options);
-            console.log(result);
+            // console.log(result);
             res.send(result);
+        })
+
+        app.post('/addCategory', async (req, res) => {
+            const data = req.body;
+            console.log(data);
+            const result = await addCollection.insertOne(data);
+            res.send(result);
+        })
+
+        app.get('/addCategory', async (req, res) => {
+            const category = req.query;
+            const result = await addCollection.find(category).limit(20).toArray();
+            res.send(result);
+        })
+
+
+        app.get('/myToys', async (req, res) => {
+            console.log(req.query.email);
+            let query = {};
+            if (req.query?.email) {
+                query = { sellerEmail: req.query.email }
+            }
+            const result = await addCollection.find(query).toArray();
+            console.log(result);
+            res.send(result)
+        })
+
+
+        app.delete('/myToys/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await addCollection.deleteOne(query);
+            res.send(result)
         })
 
         // Send a ping to confirm a successful connection
@@ -77,9 +111,9 @@ run().catch(console.dir);
 
 
 app.get('/', (req, res) => {
-    res.send('Doctor is running')
+    res.send('Sports is running')
 })
 
 app.listen(port, () => {
-    console.log(`Car doctor server is running on port ${port}`);
+    console.log(`Top gear server is running on port ${port}`);
 })
